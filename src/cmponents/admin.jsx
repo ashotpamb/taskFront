@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { login } from "../api/api"
+import { adminLogin } from "../api/api"
 import { useHistory } from 'react-router-dom';
 
 
@@ -18,18 +18,15 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
 
     try {
-      const response = await login(formData.email, formData.password);
-
-      const userData = response && response.model;
-
+      const response = await adminLogin(formData.email, formData.password);
+      
+      const dashboard = response && response.model;
       history.push({
-        pathname: '/user',
-        state: { userData, token: response.token },
+        pathname: '/dashboard',
+        state: { dashboard, token: response.token },
       });
-
     } catch (error) {
       alert(error.response.data)
     }

@@ -17,7 +17,7 @@ const UserComponent = (props) => {
                 const courseData = await getCourses();
                 setCourses(courseData);
             } catch (error) {
-                console.error('Error fetching courses:', error);
+                alert(error.response.data)
             }
         }
         fetchCourses();
@@ -26,12 +26,9 @@ const UserComponent = (props) => {
     const handleRemoveCourse = async (courseIdToRemove) => {
         try {
             const response = await removeUserCourse(courseIdToRemove, token);
-            console.log(response);
             setUserData({ ...userData, courses: response.data.model });
-
-
         } catch (error) {
-            console.error('Error removing course:', error);
+            alert(error.response.data)
         }
     };
 

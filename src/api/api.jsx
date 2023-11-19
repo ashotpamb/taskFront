@@ -68,3 +68,13 @@ export const removeUserCourse = (courseIdToRemove, token) => {
         throw error;
     }
 };
+export const adminLogin = (email, password) => {
+    return axios.post(localUrl + '/admin/login', { email, password })
+        .then(response => {
+            return response.data;
+        })
+        .catch(error => {
+            console.log(error);
+            throw error;
+        });
+};
