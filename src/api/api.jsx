@@ -2,6 +2,7 @@
 import axios from 'axios';
 const localUrl = 'http://127.0.0.1:5239';
 
+
 export const login = (email, password) => {
     return axios.post(localUrl + '/Login', { email, password })
         .then(response => {
@@ -32,7 +33,7 @@ export const getCourses = () => {
         })
         .catch(error => console.log(error));
 }
-export const saveUserCourses = (token, courseIdArray) => {
+export const saveUserCourses = async (token, courseIdArray) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`
@@ -43,7 +44,7 @@ export const saveUserCourses = (token, courseIdArray) => {
     };
     const url = `${localUrl}/assign-course-to-user/${courseIdArray}`;
 
-    return axios.post(url, null, config)
+    return await axios.post(url, null, config)
         .then(response => {
             console.log(response);
             return response.data;
@@ -51,7 +52,7 @@ export const saveUserCourses = (token, courseIdArray) => {
         .catch(error => console.log(error));
 }
 
-export const removeUserCourse = (courseIdToRemove, token) => {
+export const removeUserCourse = async (courseIdToRemove, token) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`
@@ -61,10 +62,11 @@ export const removeUserCourse = (courseIdToRemove, token) => {
     const url = `${localUrl}/delete-course-from-user/${courseIdToRemove}`;
 
     try {
-        const response = axios.delete(url,config);
+        const response = await axios.delete(url,config);
         console.log("response" + response);
         return response.data;
     } catch (error) {
+        console.log(error, 'in api');
         throw error;
     }
 };

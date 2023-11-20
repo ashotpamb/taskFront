@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { getCourses } from "../api/api"
 import { saveUserCourses } from "../api/api"
 import { removeUserCourse } from "../api/api"
+import { useHistory } from 'react-router-dom';
+
 
 const UserComponent = (props) => {
     const { location } = props;
@@ -9,8 +11,14 @@ const UserComponent = (props) => {
     const [userData, setUserData] = useState(initialUserData);
     const [courses, setCourses] = useState([]);
     const [selectedCourses, setSelectedCourses] = useState([]);
+    const history = useHistory();
 
 
+    const handleUnAuthorized = (error) => {
+        if(error && error.response && error.response.status === 401) {
+            history.push('/login')
+        }
+    }
     useEffect(() => {
         async function fetchCourses() {
             try {
@@ -26,19 +34,21 @@ const UserComponent = (props) => {
     const handleRemoveCourse = async (courseIdToRemove) => {
         try {
             const response = await removeUserCourse(courseIdToRemove, token);
-            setUserData({ ...userData, courses: response.data.model });
+            console.log(response,'response');
+            setUserData({ ...userData, courses: response.courses });
         } catch (error) {
-            alert(error.response.data)
+            handleUnAuthorized(error)
         }
     };
 
     const handleSaveCourses = async () => {
         try {
-            await saveUserCourses(token, selectedCourses.map(id => encodeURIComponent(id)).join('%2C'));
+          const response = await saveUserCourses(token, selectedCourses.map(id => encodeURIComponent(id)).join('%2C'));
+          setUserData({ ...userData, courses: response.courses });
+
 
         } catch (error) {
-            alert(error)
-            console.error('Error saving courses:', error);
+            handleUnAuthorized(error)
         }
     };
     return (
@@ -134,7 +144,7 @@ const UserComponent = (props) => {
                                         value={course.id}
                                         selected={selectedCourses}
                                         disabled={
-                                            selectedCourses.findIndex((o) => o.id === course.id) !== -1
+                                            userData.courses.findIndex((o) => o.id === course.id) !== -1
                                         }
                                     >
                                         {course.courseName}
