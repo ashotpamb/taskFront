@@ -1,25 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { getCourses } from "../api/api"
+import { fetchUserData, getCourses, userData } from "../api/api"
 import { saveUserCourses } from "../api/api"
 import { removeUserCourse } from "../api/api"
-import { useHistory } from 'react-router-dom';
+import { useHistory, Redirect } from 'react-router-dom';
+import { handleUnAuthorized } from '../api/utils';
+
 
 
 const UserComponent = (props) => {
     const { location } = props;
-    const { userData: initialUserData, token } = location.state;
-    const [userData, setUserData] = useState(initialUserData);
+    const { token } = location.state;
+    const [userData, setUserData] = useState({
+        courses: [],
+    });
+    const [ auth, setAuth] = useState(Boolean(token));
     const [courses, setCourses] = useState([]);
     const [selectedCourses, setSelectedCourses] = useState([]);
-    const history = useHistory();
+
+    console.log(userData, 'userDatauserData');
 
 
-    const handleUnAuthorized = (error) => {
-        if(error && error.response && error.response.status === 401) {
-            history.push('/login')
-        }
-    }
     useEffect(() => {
+        async function getUserdata1 () {
+            try {
+                 const userData1 = await fetchUserData();
+                 setUserData(userData1.data)
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        getUserdata1()
         async function fetchCourses() {
             try {
                 const courseData = await getCourses();
@@ -33,7 +44,7 @@ const UserComponent = (props) => {
 
     const handleRemoveCourse = async (courseIdToRemove) => {
         try {
-            const response = await removeUserCourse(courseIdToRemove, token);
+            const response = await removeUserCourse(courseIdToRemove);
             console.log(response,'response');
             setUserData({ ...userData, courses: response.courses });
         } catch (error) {
@@ -43,14 +54,29 @@ const UserComponent = (props) => {
 
     const handleSaveCourses = async () => {
         try {
-          const response = await saveUserCourses(token, selectedCourses.map(id => encodeURIComponent(id)).join('%2C'));
+          const response = await saveUserCourses( selectedCourses.map(id => encodeURIComponent(id)).join('%2C'));
           setUserData({ ...userData, courses: response.courses });
-
 
         } catch (error) {
             handleUnAuthorized(error)
         }
     };
+
+    useEffect(() => {
+        const handleStorageChange = () => {
+            setAuth(Boolean(localStorage.getItem('token')));
+        }
+        window.addEventListener('storage', handleStorageChange);
+
+         return ( ) => window.removeEventListener('storage', handleStorageChange)
+
+    }, [])
+
+
+    if( !localStorage.getItem('token')  && !auth) {
+       return <Redirect to='login' />
+    }
+
     return (
         <div className="container mt-5">
             <h2>User Information</h2>

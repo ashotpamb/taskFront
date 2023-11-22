@@ -27,7 +27,7 @@ const LoginForm = () => {
 
       history.push({
         pathname: '/user',
-        state: { userData, token: response.token },
+        state: { token: response.token },
       });
 
     } catch (error) {
